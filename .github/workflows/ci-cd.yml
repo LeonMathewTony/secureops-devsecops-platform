@@ -1,20 +1,17 @@
-name: SecureOps CI/CD Pipeline
+name: SecureOps DevSecOps Pipeline
 
 on:
-
   push:
-
     branches:
       - main
 
   pull_request:
-
     branches:
       - main
 
 jobs:
 
-  build-and-scan:
+  security-checks:
 
     runs-on: ubuntu-latest
 
@@ -25,7 +22,6 @@ jobs:
       # =========================
 
       - name: Checkout Repository
-
         uses: actions/checkout@v4
 
       # =========================
@@ -33,62 +29,54 @@ jobs:
       # =========================
 
       - name: Setup Python
-
         uses: actions/setup-python@v5
-
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
       # =========================
       # INSTALL DEPENDENCIES
       # =========================
 
       - name: Install Dependencies
-
         run: |
-
           python -m pip install --upgrade pip
-
           pip install -r requirements.txt
 
       # =========================
-      # DOCKER BUILD
+      # RUN BANDIT SECURITY SCAN
+      # =========================
+
+      - name: Run Bandit Scan
+        run: |
+          pip install bandit
+          bandit -r . -x ./.venv
+
+      # =========================
+      # BUILD DOCKER IMAGE
       # =========================
 
       - name: Build Docker Image
-
         run: |
-
-          docker build -t secureops .
+          docker build -t secureops-app .
 
       # =========================
-      # TRIVY SECURITY SCAN
+      # RUN TRIVY SECURITY SCAN
       # =========================
 
-      - name: Run Trivy Scan
-
+      - name: Run Trivy Vulnerability Scanner
         uses: aquasecurity/trivy-action@master
-
         with:
-
-          image-ref: 'secureops'
-
-          format: 'table'
-
-          exit-code: '0'
-
+          image-ref: secureops-app
+          format: table
+          exit-code: 0
           ignore-unfixed: true
-
-          vuln-type: 'os,library'
-
-          severity: 'CRITICAL,HIGH'
+          vuln-type: os,library
+          severity: CRITICAL,HIGH
 
       # =========================
       # SUCCESS MESSAGE
       # =========================
 
       - name: Pipeline Success
-
         run: |
-
           echo "CI/CD Pipeline Completed Successfully"
