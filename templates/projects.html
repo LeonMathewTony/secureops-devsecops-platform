@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Projects | SecureOps</title>
+
+    <!-- FONT AWESOME -->
+    <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+
+    <!-- CSS -->
+    <link rel="stylesheet"
+    href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body class="dashboard-body projects-page">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+        <div class="logo">
+            Secure<span>Ops</span>
+        </div>
+
+        <nav class="sidebar-nav">
+
+            <a href="{{ url_for('dashboard') }}">
+                <i class="fa-solid fa-chart-line"></i>
+                Dashboard
+            </a>
+
+            <a href="{{ url_for('projects') }}" class="active">
+                <i class="fa-solid fa-layer-group"></i>
+                Projects
+            </a>
+
+            <a href="{{ url_for('tasks') }}">
+                <i class="fa-solid fa-list-check"></i>
+                Tasks
+            </a>
+
+            <a href="{{ url_for('analytics') }}">
+                <i class="fa-solid fa-chart-pie"></i>
+                Analytics
+            </a>
+
+        </nav>
+
+        <a href="{{ url_for('logout') }}" class="logout-btn">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            Logout
+        </a>
+
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main-content">
+
+        <!-- TOP BAR -->
+        <div class="top-bar">
+
+            <div>
+
+                <h1 class="page-title">
+                    Infrastructure Projects
+                </h1>
+
+                <p class="page-subtitle">
+                    Manage secure deployments and enterprise infrastructure operations.
+                </p>
+
+            </div>
+
+            <!-- PROFILE -->
+            <div class="profile-box">
+
+                <div class="profile-avatar">
+                    {{ current_user.username[0]|upper }}
+
+                    <span class="live-dot"></span>
+                </div>
+
+                <div>
+
+                    <h4>
+                        {{ current_user.username }}
+                    </h4>
+
+                    <p>
+                        DevSecOps Engineer
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- PROJECT GRID -->
+        <div class="projects-grid">
+
+            <!-- CARD 1 -->
+            <div class="project-card">
+
+                <div class="project-top">
+
+                    <span class="status active-status">
+                        Active
+                    </span>
+
+                    <i class="fa-solid fa-shield-halved"></i>
+
+                </div>
+
+                <h2>
+                    Cloud Security Audit
+                </h2>
+
+                <p>
+                    AWS infrastructure vulnerability assessment and compliance review.
+                </p>
+
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width:78%;"></div>
+                </div>
+
+                <span class="progress-text">
+                    78% Completed
+                </span>
+
+            </div>
+
+            <!-- CARD 2 -->
+            <div class="project-card">
+
+                <div class="project-top">
+
+                    <span class="status progress-status">
+                        In Progress
+                    </span>
+
+                    <i class="fa-solid fa-server"></i>
+
+                </div>
+
+                <h2>
+                    Kubernetes Monitoring
+                </h2>
+
+                <p>
+                    Real-time monitoring and logging for containerized workloads.
+                </p>
+
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width:54%;"></div>
+                </div>
+
+                <span class="progress-text">
+                    54% Completed
+                </span>
+
+            </div>
+
+            <!-- CARD 3 -->
+            <div class="project-card">
+
+                <div class="project-top">
+
+                    <span class="status completed-status">
+                        Completed
+                    </span>
+
+                    <i class="fa-solid fa-lock"></i>
+
+                </div>
+
+                <h2>
+                    Zero Trust Setup
+                </h2>
+
+                <p>
+                    Enterprise-grade identity and access management architecture.
+                </p>
+
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width:100%;"></div>
+                </div>
+
+                <span class="progress-text">
+                    100% Completed
+                </span>
+
+            </div>
+
+            <!-- CARD 4 -->
+            <div class="project-card">
+
+                <div class="project-top">
+
+                    <span class="status active-status">
+                        Active
+                    </span>
+
+                    <i class="fa-solid fa-cloud"></i>
+
+                </div>
+
+                <h2>
+                    Multi Cloud Deployment
+                </h2>
+
+                <p>
+                    Hybrid cloud orchestration across AWS and Azure environments.
+                </p>
+
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width:67%;"></div>
+                </div>
+
+                <span class="progress-text">
+                    67% Completed
+                </span>
+
+            </div>
+
+            <!-- CARD 5 -->
+            <div class="project-card">
+
+                <div class="project-top">
+
+                    <span class="status progress-status">
+                        In Progress
+                    </span>
+
+                    <i class="fa-solid fa-code-branch"></i>
+
+                </div>
+
+                <h2>
+                    CI/CD Automation
+                </h2>
+
+                <p>
+                    Automated deployment pipelines with integrated security scanning.
+                </p>
+
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width:73%;"></div>
+                </div>
+
+                <span class="progress-text">
+                    73% Completed
+                </span>
+
+            </div>
+
+            <!-- CARD 6 -->
+            <div class="project-card">
+
+                <div class="project-top">
+
+                    <span class="status completed-status">
+                        Completed
+                    </span>
+
+                    <i class="fa-solid fa-database"></i>
+
+                </div>
+
+                <h2>
+                    Database Hardening
+                </h2>
+
+                <p>
+                    SQL database encryption and infrastructure security optimization.
+                </p>
+
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width:100%;"></div>
+                </div>
+
+                <span class="progress-text">
+                    100% Completed
+                </span>
+
+            </div>
+
+        </div>
+
+    </main>
+
+</body>
+</html>

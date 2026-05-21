@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <title>Dashboard | SecureOps</title>
+
+    <link rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}">
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+
+<body>
+
+    <!-- BACKGROUND -->
+
+    <div class="luxury-bg"></div>
+
+    <!-- ANIMATED LINES -->
+
+    <div class="animated-bg">
+
+        <div class="arrow-line line-a"></div>
+
+        <div class="arrow-line line-b"></div>
+
+        <div class="arrow-line line-c"></div>
+
+    </div>
+
+    <!-- ORBS -->
+
+    <div class="floating-orb orb1"></div>
+    <div class="floating-orb orb2"></div>
+    <div class="floating-orb orb3"></div>
+
+    <!-- MAIN -->
+
+    <div class="dashboard-layout">
+
+        <!-- SIDEBAR -->
+
+        <aside class="sidebar">
+
+            <div>
+
+                <!-- LOGO -->
+
+                <div class="logo">
+
+                    Secure<span>Ops</span>
+
+                </div>
+
+                <!-- NAV -->
+
+                <nav class="sidebar-nav">
+
+                    <a href="{{ url_for('dashboard') }}"
+                        class="active">
+
+                        <i class="fa-solid fa-chart-line"></i>
+
+                        Dashboard
+
+                    </a>
+
+                    <a href="{{ url_for('projects') }}">
+
+                        <i class="fa-solid fa-layer-group"></i>
+
+                        Projects
+
+                    </a>
+
+                    <a href="{{ url_for('tasks') }}">
+
+                        <i class="fa-solid fa-list-check"></i>
+
+                        Tasks
+
+                    </a>
+
+                    <a href="{{ url_for('analytics') }}">
+
+                        <i class="fa-solid fa-chart-pie"></i>
+
+                        Analytics
+
+                    </a>
+
+                </nav>
+
+            </div>
+
+            <!-- LOGOUT -->
+
+            <a href="{{ url_for('logout') }}"
+                class="logout-btn">
+
+                <i class="fa-solid fa-right-from-bracket"></i>
+
+                Logout
+
+            </a>
+
+        </aside>
+
+        <!-- CONTENT -->
+
+        <main class="main-content">
+
+            <!-- TOP -->
+
+            <div class="top-section">
+
+                <!-- LEFT -->
+
+                <div>
+
+                    <h1 class="welcome-title">
+
+                        Welcome Back,
+                        {{ user.username }}
+
+                    </h1>
+
+                    <p class="welcome-text">
+
+                        Real-time infrastructure monitoring,
+                        secure deployments and enterprise cloud operations.
+
+                    </p>
+
+                </div>
+
+                <!-- PROFILE -->
+
+                <div class="profile-box">
+
+                    <!-- AVATAR -->
+
+                    <div class="profile-avatar-wrapper">
+
+                        <div class="profile-avatar">
+
+                            {{ user.username[0] }}
+
+                        </div>
+
+                        <div class="live-dot"></div>
+
+                    </div>
+
+                    <!-- INFO -->
+
+                    <div class="profile-info">
+
+                        <h4>
+
+                            {{ user.username }}
+
+                        </h4>
+
+                        <p>
+
+                            Infrastructure Lead
+
+                        </p>
+
+                    </div>
+
+                    <!-- STATUS -->
+
+                    <div class="profile-status">
+
+                        ● Monitoring Live
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- STATS -->
+
+            <div class="stats-grid">
+
+                <!-- CARD -->
+
+                <div class="stat-card">
+
+                    <i class="fa-solid fa-list-check"></i>
+
+                    <h2>
+
+                        {{ total_tasks }}
+
+                    </h2>
+
+                    <p>
+
+                        Total Tasks
+
+                    </p>
+
+                </div>
+
+                <!-- CARD -->
+
+                <div class="stat-card">
+
+                    <i class="fa-solid fa-circle-check"></i>
+
+                    <h2>
+
+                        {{ completed_tasks }}
+
+                    </h2>
+
+                    <p>
+
+                        Completed
+
+                    </p>
+
+                </div>
+
+                <!-- CARD -->
+
+                <div class="stat-card">
+
+                    <i class="fa-solid fa-clock"></i>
+
+                    <h2>
+
+                        {{ pending_tasks }}
+
+                    </h2>
+
+                    <p>
+
+                        Pending
+
+                    </p>
+
+                </div>
+
+                <!-- CARD -->
+
+                <div class="stat-card">
+
+                    <i class="fa-solid fa-spinner"></i>
+
+                    <h2>
+
+                        {{ progress_tasks }}
+
+                    </h2>
+
+                    <p>
+
+                        In Progress
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <!-- ACTIVITY -->
+
+            <div class="activity-card">
+
+                <h2>
+
+                    Infrastructure Activity
+
+                </h2>
+
+                <!-- ITEM -->
+
+                <div class="activity-item">
+
+                    <div>
+
+                        <h3>
+
+                            Kubernetes Deployment
+
+                        </h3>
+
+                        <p>
+
+                            Cluster deployment synced successfully.
+
+                        </p>
+
+                    </div>
+
+                    <span class="badge">
+
+                        Live
+
+                    </span>
+
+                </div>
+
+                <!-- ITEM -->
+
+                <div class="activity-item">
+
+                    <div>
+
+                        <h3>
+
+                            Security Scan
+
+                        </h3>
+
+                        <p>
+
+                            Vulnerability analysis completed.
+
+                        </p>
+
+                    </div>
+
+                    <span class="badge">
+
+                        Completed
+
+                    </span>
+
+                </div>
+
+                <!-- ITEM -->
+
+                <div class="activity-item">
+
+                    <div>
+
+                        <h3>
+
+                            CI/CD Pipeline
+
+                        </h3>
+
+                        <p>
+
+                            Build pipeline currently running.
+
+                        </p>
+
+                    </div>
+
+                    <span class="badge">
+
+                        Running
+
+                    </span>
+
+                </div>
+
+                <!-- ITEM -->
+
+                <div class="activity-item">
+
+                    <div>
+
+                        <h3>
+
+                            Threat Detection System
+
+                        </h3>
+
+                        <p>
+
+                            AI-based intrusion monitoring enabled.
+
+                        </p>
+
+                    </div>
+
+                    <span class="badge">
+
+                        Protected
+
+                    </span>
+
+                </div>
+
+            </div>
+
+        </main>
+
+    </div>
+
+</body>
+
+</html>

@@ -1,0 +1,43 @@
+version: '3.9'
+
+services:
+
+  secureops:
+    build: .
+    container_name: secureops_app
+
+    ports:
+      - "5000:5000"
+
+    volumes:
+      - .:/app
+
+    environment:
+      - FLASK_ENV=development
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/secureopsdb
+
+    depends_on:
+      - db
+
+    restart: always
+
+  db:
+    image: postgres:16
+
+    container_name: secureops_database
+
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: secureopsdb
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    restart: always
+
+volumes:
+  postgres_data:

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        SecureOps Register
+    </title>
+
+    <!-- CSS -->
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+    <!-- FONT AWESOME -->
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    >
+
+</head>
+
+<body>
+
+    <!-- BACKGROUND -->
+
+    <div class="luxury-bg">
+
+        <span class="lux-line line1"></span>
+
+        <span class="lux-line line2"></span>
+
+        <span class="lux-line line3"></span>
+
+    </div>
+
+    <!-- FLOATING ORBS -->
+
+    <div class="floating-orb orb1"></div>
+
+    <div class="floating-orb orb2"></div>
+
+    <div class="floating-orb orb3"></div>
+
+    <!-- MAIN -->
+
+    <div class="auth-wrapper">
+
+        <!-- LEFT SIDE -->
+
+        <div class="auth-left">
+
+            <p class="auth-subtitle">
+
+                SECURE DEVSECOPS PLATFORM
+
+            </p>
+
+            <h1 class="hero-title">
+
+                Build secure <br>
+
+                modern workflows.
+
+            </h1>
+
+            <p class="hero-text">
+
+                Create your SecureOps account and
+                manage infrastructure, deployments
+                and security operations professionally.
+
+            </p>
+
+        </div>
+
+        <!-- RIGHT SIDE -->
+
+        <div class="auth-card">
+
+            <h1 class="auth-title">
+
+                Create Account
+
+            </h1>
+
+            <p class="auth-description">
+
+                Register to continue.
+
+            </p>
+
+            <!-- ERROR -->
+
+            {% if error %}
+
+            <div class="error-box">
+
+                {{ error }}
+
+            </div>
+
+            {% endif %}
+
+            <!-- FORM -->
+
+            <form
+                method="POST"
+                class="auth-form"
+            >
+
+                <!-- USERNAME -->
+
+                <div class="input-group">
+
+                    <i class="fa-solid fa-user"></i>
+
+                    <input
+                        type="text"
+                        name="username"
+                        placeholder="Full Name"
+                        required
+                    >
+
+                </div>
+
+                <!-- EMAIL -->
+
+                <div class="input-group">
+
+                    <i class="fa-solid fa-envelope"></i>
+
+                    <input
+                        type="email"
+                        name="email"
+                        placeholder="Email Address"
+                        required
+                    >
+
+                </div>
+
+                <!-- PASSWORD -->
+
+                <div class="input-group">
+
+                    <i class="fa-solid fa-lock"></i>
+
+                    <input
+                        type="password"
+                        name="password"
+                        placeholder="Password"
+                        required
+                    >
+
+                </div>
+
+                <!-- BUTTON -->
+
+                <button
+                    type="submit"
+                    class="auth-btn"
+                >
+
+                    Register
+
+                </button>
+
+            </form>
+
+            <!-- LOGIN -->
+
+            <div class="bottom-text">
+
+                Already have an account?
+
+                <a href="/login">
+
+                    Login
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+
+</html>

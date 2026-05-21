@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Projects | SecureOps
+    </title>
+
+    <!-- CSS -->
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+    <!-- FONT AWESOME -->
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    >
+
+</head>
+
+<body class="dashboard-body projects-page">
+
+    <!-- LIVE BACKGROUND -->
+
+    <div class="animated-bg">
+
+        <span class="line line1"></span>
+        <span class="line line2"></span>
+        <span class="line line3"></span>
+
+        <div class="grid-overlay"></div>
+
+    </div>
+
+    <!-- MAIN LAYOUT -->
+
+    <div class="dashboard-layout">
+
+        <!-- SIDEBAR -->
+
+        <aside class="sidebar">
+
+            <div class="sidebar-top">
+
+                <!-- LOGO -->
+
+                <h1 class="logo">
+
+                    Secure<span>Ops</span>
+
+                </h1>
+
+                <!-- NAVIGATION -->
+
+                <nav class="sidebar-nav">
+
+                    <a href="/dashboard">
+
+                        <i class="fas fa-chart-line"></i>
+
+                        Dashboard
+
+                    </a>
+
+                    <a
+                        href="/projects"
+                        class="active"
+                    >
+
+                        <i class="fas fa-layer-group"></i>
+
+                        Projects
+
+                    </a>
+
+                    <a href="/tasks">
+
+                        <i class="fas fa-list-check"></i>
+
+                        Tasks
+
+                    </a>
+
+                    <a href="/analytics">
+
+                        <i class="fas fa-chart-pie"></i>
+
+                        Analytics
+
+                    </a>
+
+                </nav>
+
+            </div>
+
+            <!-- LOGOUT -->
+
+            <a
+                href="/logout"
+                class="logout-btn"
+            >
+
+                <i class="fas fa-right-from-bracket"></i>
+
+                Logout
+
+            </a>
+
+        </aside>
+
+        <!-- MAIN CONTENT -->
+
+        <main class="main-content">
+
+            <!-- TOP BAR -->
+
+            <div class="top-bar">
+
+                <div>
+
+                    <h1 class="page-title">
+
+                        Infrastructure Projects
+
+                    </h1>
+
+                    <p class="page-subtitle">
+
+                        Manage secure deployments and enterprise infrastructure operations.
+
+                    </p>
+
+                </div>
+
+                <!-- PROFILE -->
+
+                <div class="profile-box">
+
+                    <div class="profile-avatar">
+
+                        {{ current_user.username[0]|upper }}
+
+                        <span class="live-dot"></span>
+
+                    </div>
+
+                    <div>
+
+                        <h4>
+
+                            {{ current_user.username }}
+
+                        </h4>
+
+                        <p>
+
+                            DevSecOps Engineer
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- PROJECT GRID -->
+
+            <div class="projects-grid">
+
+                <!-- CARD -->
+
+                <div class="project-card">
+
+                    <div class="project-header">
+
+                        <div>
+
+                            <span class="project-status active-status">
+
+                                Active
+
+                            </span>
+
+                            <h2>
+
+                                Cloud Security Audit
+
+                            </h2>
+
+                        </div>
+
+                        <i class="fa-solid fa-shield-halved"></i>
+
+                    </div>
+
+                    <p class="project-desc">
+
+                        AWS infrastructure vulnerability assessment and compliance review.
+
+                    </p>
+
+                    <div class="project-stats">
+
+                        <div class="stat-box">
+
+                            <span>
+                                Progress
+                            </span>
+
+                            <strong>
+                                78%
+                            </strong>
+
+                        </div>
+
+                        <div class="stat-box">
+
+                            <span>
+                                Team
+                            </span>
+
+                            <strong>
+                                6 Members
+                            </strong>
+
+                        </div>
+
+                        <div class="stat-box">
+
+                            <span>
+                                Deadline
+                            </span>
+
+                            <strong>
+                                12 Days
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- CARD -->
+
+                <div class="project-card">
+
+                    <div class="project-header">
+
+                        <div>
+
+                            <span class="project-status progress-status">
+
+                                In Progress
+
+                            </span>
+
+                            <h2>
+
+                                Kubernetes Monitoring
+
+                            </h2>
+
+                        </div>
+
+                        <i class="fa-solid fa-server"></i>
+
+                    </div>
+
+                    <p class="project-desc">
+
+                        Real-time monitoring and logging for containerized workloads.
+
+                    </p>
+
+                    <div class="project-stats">
+
+                        <div class="stat-box">
+
+                            <span>
+                                Progress
+                            </span>
+
+                            <strong>
+                                54%
+                            </strong>
+
+                        </div>
+
+                        <div class="stat-box">
+
+                            <span>
+                                Team
+                            </span>
+
+                            <strong>
+                                4 Members
+                            </strong>
+
+                        </div>
+
+                        <div class="stat-box">
+
+                            <span>
+                                Deadline
+                            </span>
+
+                            <strong>
+                                8 Days
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- CARD -->
+
+                <div class="project-card">
+
+                    <div class="project-header">
+
+                        <div>
+
+                            <span class="project-status completed-status">
+
+                                Completed
+
+                            </span>
+
+                            <h2>
+
+                                Zero Trust Setup
+
+                            </h2>
+
+                        </div>
+
+                        <i class="fa-solid fa-lock"></i>
+
+                    </div>
+
+                    <p class="project-desc">
+
+                        Enterprise-grade identity and access management architecture.
+
+                    </p>
+
+                    <div class="project-stats">
+
+                        <div class="stat-box">
+
+                            <span>
+                                Progress
+                            </span>
+
+                            <strong>
+                                100%
+                            </strong>
+
+                        </div>
+
+                        <div class="stat-box">
+
+                            <span>
+                                Team
+                            </span>
+
+                            <strong>
+                                9 Members
+                            </strong>
+
+                        </div>
+
+                        <div class="stat-box">
+
+                            <span>
+                                Deadline
+                            </span>
+
+                            <strong>
+                                Completed
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- CARD -->
+
+                <div class="project-card">
+
+                    <div class="project-header">
+
+                        <div>
+
+                            <span class="project-status active-status">
+
+                                Active
+
+                            </span>
+
+                            <h2>
+
+                                Multi Cloud Deployment
+
+                            </h2>
+
+                        </div>
+
+                        <i class="fa-solid fa-cloud"></i>
+
+                    </div>
+
+                    <p class="project-desc">
+
+                        Hybrid cloud orchestration across AWS and Azure environments.
+
+                    </p>
+
+                    <div class="project-stats">
+
+                        <div class="stat-box">
+
+                            <span>
+                                Progress
+                            </span>
+
+                            <strong>
+                                67%
+                            </strong>
+
+                        </div>
+
+                        <div class="stat-box">
+
+                            <span>
+                                Team
+                            </span>
+
+                            <strong>
+                                5 Members
+                            </strong>
+
+                        </div>
+
+                        <div class="stat-box">
+
+                            <span>
+                                Deadline
+                            </span>
+
+                            <strong>
+                                14 Days
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </main>
+
+    </div>
+
+</body>
+
+</html>
