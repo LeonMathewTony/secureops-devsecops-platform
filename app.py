@@ -3,8 +3,8 @@
 # =========================================
 
 import os
-
 from datetime import datetime
+from functools import wraps
 
 from flask import (
     Flask,
@@ -75,12 +75,49 @@ login_manager.login_view = "login"
 login_manager.login_message_category = "info"
 
 # =========================================
+# SECURITY HEADERS
+# =========================================
+
+@app.after_request
+def add_security_headers(response):
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+    response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+    response.headers['Content-Security-Policy'] = "default-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://fonts.gstatic.com"
+    return response
+
+# =========================================
+# ROLE DECORATORS — RBAC
+# =========================================
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if current_user.role != "Admin":
+            flash("Access denied.", "danger")
+            return redirect(url_for("dashboard"))
+        return f(*args, **kwargs)
+    return decorated_function
+
+def roles_required(*roles):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if current_user.role not in roles:
+                flash("Access denied.", "danger")
+                return redirect(url_for("dashboard"))
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
+
+# =========================================
 # USER LOADER
 # =========================================
 
 @login_manager.user_loader
 def load_user(user_id):
-
     return User.query.get(int(user_id))
 
 # =========================================
@@ -89,10 +126,7 @@ def load_user(user_id):
 
 @app.route("/")
 def home():
-
-    return redirect(
-        url_for("login")
-    )
+    return redirect(url_for("login"))
 
 # =========================================
 # REGISTER
@@ -102,70 +136,32 @@ def home():
 def register():
 
     if current_user.is_authenticated:
-
-        return redirect(
-            url_for("dashboard")
-        )
+        return redirect(url_for("dashboard"))
 
     if request.method == "POST":
 
         username = request.form.get("username")
-
-        name = request.form.get("username")
-
-        email = request.form.get("email")
-
+        name     = request.form.get("username")
+        email    = request.form.get("email")
         password = request.form.get("password")
 
-        # =====================================
-        # CHECK EXISTING USER
-        # =====================================
-
         existing_user = User.query.filter(
-            (User.email == email) |
-            (User.username == username)
+            (User.email == email) | (User.username == username)
         ).first()
 
         if existing_user:
+            flash("Email or username already exists.", "danger")
+            return render_template("register.html", error="Email or username already exists.")
 
-            flash(
-                "Email or username already exists.",
-                "danger"
-            )
-
-            return render_template(
-                "register.html",
-                error="Email or username already exists."
-            )
-
-        # =====================================
-        # CREATE USER
-        # =====================================
-
-        new_user = User(
-            username=username,
-            name=name,
-            email=email
-        )
-
+        new_user = User(username=username, name=name, email=email)
         new_user.set_password(password)
-
         db.session.add(new_user)
-
         db.session.commit()
 
-        flash(
-            "Account created successfully.",
-            "success"
-        )
+        flash("Account created successfully.", "success")
+        return redirect(url_for("login"))
 
-        return redirect(
-            url_for("login")
-        )
-
-    return render_template(
-        "register.html"
-    )
+    return render_template("register.html")
 
 # =========================================
 # LOGIN
@@ -175,67 +171,31 @@ def register():
 def login():
 
     if current_user.is_authenticated:
-
-        return redirect(
-            url_for("dashboard")
-        )
+        return redirect(url_for("dashboard"))
 
     if request.method == "POST":
 
-        email = request.form.get("email")
-
+        email    = request.form.get("email")
         password = request.form.get("password")
 
-        user = User.query.filter_by(
-            email=email
-        ).first()
-
-        # =====================================
-        # CHECK PASSWORD
-        # =====================================
+        user = User.query.filter_by(email=email).first()
 
         if user and user.check_password(password):
 
-            # =====================================
-            # BLOCK DISABLED USERS
-            # =====================================
-
             if not user.is_active_user:
-
-                return render_template(
-                    "login.html",
-                    error="Your account has been disabled."
-                )
-
-            # =====================================
-            # UPDATE LAST LOGIN
-            # =====================================
+                return render_template("login.html", error="Your account has been disabled.")
 
             user.last_login = datetime.utcnow()
-
             db.session.commit()
 
             login_user(user)
-
-            flash(
-                "Login successful.",
-                "success"
-            )
-
-            return redirect(
-                url_for("dashboard")
-            )
+            flash("Login successful.", "success")
+            return redirect(url_for("dashboard"))
 
         else:
+            return render_template("login.html", error="Invalid email or password.")
 
-            return render_template(
-                "login.html",
-                error="Invalid email or password."
-            )
-
-    return render_template(
-        "login.html"
-    )
+    return render_template("login.html")
 
 # =========================================
 # FORGOT PASSWORD
@@ -245,26 +205,12 @@ def login():
 def forgot_password():
 
     if request.method == "POST":
-
-        email = request.form.get("email")
-
-        user = User.query.filter_by(
-            email=email
-        ).first()
-
-        flash(
-            "If that email exists, a reset link has been sent.",
-            "info"
-        )
-
         return render_template(
             "forgot_password.html",
             success="If that email exists, a reset link has been sent."
         )
 
-    return render_template(
-        "forgot_password.html"
-    )
+    return render_template("forgot_password.html")
 
 # =========================================
 # DASHBOARD
@@ -274,30 +220,11 @@ def forgot_password():
 @login_required
 def dashboard():
 
-    total_tasks = Task.query.filter_by(
-        user_id=current_user.id
-    ).count()
-
-    completed_tasks = Task.query.filter_by(
-        user_id=current_user.id,
-        status="Completed"
-    ).count()
-
-    pending_tasks = Task.query.filter_by(
-        user_id=current_user.id,
-        status="Pending"
-    ).count()
-
-    progress_tasks = Task.query.filter_by(
-        user_id=current_user.id,
-        status="In Progress"
-    ).count()
-
-    recent_tasks = Task.query.filter_by(
-        user_id=current_user.id
-    ).order_by(
-        Task.created_at.desc()
-    ).limit(5).all()
+    total_tasks = Task.query.filter_by(user_id=current_user.id).count()
+    completed_tasks = Task.query.filter_by(user_id=current_user.id, status="Completed").count()
+    pending_tasks = Task.query.filter_by(user_id=current_user.id, status="Pending").count()
+    progress_tasks = Task.query.filter_by(user_id=current_user.id, status="In Progress").count()
+    recent_tasks = Task.query.filter_by(user_id=current_user.id).order_by(Task.created_at.desc()).limit(5).all()
 
     return render_template(
         "dashboard.html",
@@ -319,35 +246,15 @@ def projects():
 
     if request.method == "POST":
 
-        name = request.form.get("name")
-
+        name        = request.form.get("name")
         description = request.form.get("description")
-
-        status = request.form.get(
-            "status",
-            "Active"
-        )
-
-        priority = request.form.get(
-            "priority",
-            "Medium"
-        )
-
-        technology = request.form.get(
-            "technology",
-            ""
-        )
+        status      = request.form.get("status", "Active")
+        priority    = request.form.get("priority", "Medium")
+        technology  = request.form.get("technology", "")
 
         if not name or not description:
-
-            flash(
-                "Please fill all required fields.",
-                "danger"
-            )
-
-            return redirect(
-                url_for("projects")
-            )
+            flash("Please fill all required fields.", "danger")
+            return redirect(url_for("projects"))
 
         new_project = Project(
             name=name,
@@ -359,29 +266,16 @@ def projects():
         )
 
         db.session.add(new_project)
-
         db.session.commit()
 
-        flash(
-            "Project created successfully.",
-            "success"
-        )
-
-        return redirect(
-            url_for("projects")
-        )
+        flash("Project created successfully.", "success")
+        return redirect(url_for("projects"))
 
     all_projects = Project.query.filter_by(
         user_id=current_user.id
-    ).order_by(
-        Project.created_at.desc()
-    ).all()
+    ).order_by(Project.created_at.desc()).all()
 
-    return render_template(
-        "projects.html",
-        user=current_user,
-        projects=all_projects
-    )
+    return render_template("projects.html", user=current_user, projects=all_projects)
 
 # =========================================
 # DELETE PROJECT
@@ -394,28 +288,14 @@ def delete_project(id):
     project = Project.query.get_or_404(id)
 
     if project.user_id != current_user.id:
-
-        flash(
-            "Unauthorized action.",
-            "danger"
-        )
-
-        return redirect(
-            url_for("projects")
-        )
+        flash("Unauthorized action.", "danger")
+        return redirect(url_for("projects"))
 
     db.session.delete(project)
-
     db.session.commit()
 
-    flash(
-        "Project deleted successfully.",
-        "success"
-    )
-
-    return redirect(
-        url_for("projects")
-    )
+    flash("Project deleted successfully.", "success")
+    return redirect(url_for("projects"))
 
 # =========================================
 # TASKS
@@ -427,30 +307,14 @@ def tasks():
 
     if request.method == "POST":
 
-        title = request.form.get("title")
-
+        title       = request.form.get("title")
         description = request.form.get("description")
-
-        status = request.form.get(
-            "status",
-            "Pending"
-        )
-
-        priority = request.form.get(
-            "priority",
-            "Medium"
-        )
+        status      = request.form.get("status", "Pending")
+        priority    = request.form.get("priority", "Medium")
 
         if not title or not description:
-
-            flash(
-                "Please fill all required fields.",
-                "danger"
-            )
-
-            return redirect(
-                url_for("tasks")
-            )
+            flash("Please fill all required fields.", "danger")
+            return redirect(url_for("tasks"))
 
         new_task = Task(
             title=title,
@@ -461,29 +325,16 @@ def tasks():
         )
 
         db.session.add(new_task)
-
         db.session.commit()
 
-        flash(
-            "Task created successfully.",
-            "success"
-        )
-
-        return redirect(
-            url_for("tasks")
-        )
+        flash("Task created successfully.", "success")
+        return redirect(url_for("tasks"))
 
     all_tasks = Task.query.filter_by(
         user_id=current_user.id
-    ).order_by(
-        Task.created_at.desc()
-    ).all()
+    ).order_by(Task.created_at.desc()).all()
 
-    return render_template(
-        "tasks.html",
-        tasks=all_tasks,
-        user=current_user
-    )
+    return render_template("tasks.html", tasks=all_tasks, user=current_user)
 
 # =========================================
 # EDIT TASK
@@ -496,48 +347,22 @@ def edit_task(id):
     task = Task.query.get_or_404(id)
 
     if task.user_id != current_user.id:
-
-        flash(
-            "Unauthorized action.",
-            "danger"
-        )
-
-        return redirect(
-            url_for("tasks")
-        )
+        flash("Unauthorized action.", "danger")
+        return redirect(url_for("tasks"))
 
     if request.method == "POST":
 
-        task.title = request.form.get("title")
-
+        task.title       = request.form.get("title")
         task.description = request.form.get("description")
-
-        task.status = request.form.get(
-            "status",
-            task.status
-        )
-
-        task.priority = request.form.get(
-            "priority",
-            task.priority
-        )
+        task.status      = request.form.get("status", task.status)
+        task.priority    = request.form.get("priority", task.priority)
 
         db.session.commit()
 
-        flash(
-            "Task updated successfully.",
-            "success"
-        )
+        flash("Task updated successfully.", "success")
+        return redirect(url_for("tasks"))
 
-        return redirect(
-            url_for("tasks")
-        )
-
-    return render_template(
-        "edit_task.html",
-        task=task,
-        user=current_user
-    )
+    return render_template("edit_task.html", task=task, user=current_user)
 
 # =========================================
 # DELETE TASK
@@ -550,28 +375,14 @@ def delete_task(id):
     task = Task.query.get_or_404(id)
 
     if task.user_id != current_user.id:
-
-        flash(
-            "Unauthorized action.",
-            "danger"
-        )
-
-        return redirect(
-            url_for("tasks")
-        )
+        flash("Unauthorized action.", "danger")
+        return redirect(url_for("tasks"))
 
     db.session.delete(task)
-
     db.session.commit()
 
-    flash(
-        "Task deleted successfully.",
-        "success"
-    )
-
-    return redirect(
-        url_for("tasks")
-    )
+    flash("Task deleted successfully.", "success")
+    return redirect(url_for("tasks"))
 
 # =========================================
 # ANALYTICS
@@ -579,26 +390,13 @@ def delete_task(id):
 
 @app.route("/analytics")
 @login_required
+@roles_required("Admin", "Security Analyst", "DevOps Engineer", "Cloud Engineer")
 def analytics():
 
-    total_tasks = Task.query.filter_by(
-        user_id=current_user.id
-    ).count()
-
-    completed_tasks = Task.query.filter_by(
-        user_id=current_user.id,
-        status="Completed"
-    ).count()
-
-    pending_tasks = Task.query.filter_by(
-        user_id=current_user.id,
-        status="Pending"
-    ).count()
-
-    progress_tasks = Task.query.filter_by(
-        user_id=current_user.id,
-        status="In Progress"
-    ).count()
+    total_tasks     = Task.query.filter_by(user_id=current_user.id).count()
+    completed_tasks = Task.query.filter_by(user_id=current_user.id, status="Completed").count()
+    pending_tasks   = Task.query.filter_by(user_id=current_user.id, status="Pending").count()
+    progress_tasks  = Task.query.filter_by(user_id=current_user.id, status="In Progress").count()
 
     return render_template(
         "analytics.html",
@@ -617,15 +415,9 @@ def analytics():
 @login_required
 def profile():
 
-    total_tasks = Task.query.filter_by(
-        user_id=current_user.id
-    ).count()
+    total_tasks = Task.query.filter_by(user_id=current_user.id).count()
 
-    return render_template(
-        "profile.html",
-        user=current_user,
-        total_tasks=total_tasks
-    )
+    return render_template("profile.html", user=current_user, total_tasks=total_tasks)
 
 # =========================================
 # ADMIN USERS
@@ -633,61 +425,25 @@ def profile():
 
 @app.route("/admin/users", methods=["GET", "POST"])
 @login_required
+@admin_required
 def admin_users():
-
-    # =====================================
-    # ADMIN ONLY
-    # =====================================
-
-    if current_user.role != "Admin":
-
-        flash(
-            "Access denied.",
-            "danger"
-        )
-
-        return redirect(
-            url_for("dashboard")
-        )
-
-    # =====================================
-    # CREATE USER
-    # =====================================
 
     if request.method == "POST":
 
-        username = request.form.get("username")
+        username   = request.form.get("username")
+        name       = request.form.get("name")
+        email      = request.form.get("email")
+        password   = request.form.get("password")
+        role       = request.form.get("role", "DevOps Engineer")
+        department = request.form.get("department", "Infrastructure")
 
-        name = request.form.get("name")
-
-        email = request.form.get("email")
-
-        password = request.form.get("password")
-
-        role = request.form.get(
-            "role",
-            "DevOps Engineer"
-        )
-
-        department = request.form.get(
-            "department",
-            "Infrastructure"
-        )
-
-        existing_user = User.query.filter(
-            (User.email == email) |
-            (User.username == username)
+        existing = User.query.filter(
+            (User.email == email) | (User.username == username)
         ).first()
 
-        if existing_user:
-
-            flash(
-                "Email or username already exists.",
-                "danger"
-            )
-
+        if existing:
+            flash("Email or username already exists.", "danger")
         else:
-
             new_user = User(
                 username=username,
                 name=name,
@@ -695,27 +451,14 @@ def admin_users():
                 role=role,
                 department=department
             )
-
             new_user.set_password(password)
-
             db.session.add(new_user)
-
             db.session.commit()
+            flash(f"{name} created successfully.", "success")
 
-            flash(
-                f"{name} created successfully.",
-                "success"
-            )
+    users = User.query.order_by(User.created_at.desc()).all()
 
-    users = User.query.order_by(
-        User.created_at.desc()
-    ).all()
-
-    return render_template(
-        "admin_users.html",
-        users=users,
-        user=current_user
-    )
+    return render_template("admin_users.html", users=users, user=current_user)
 
 # =========================================
 # DELETE USER
@@ -723,48 +466,20 @@ def admin_users():
 
 @app.route("/delete-user/<int:user_id>")
 @login_required
+@admin_required
 def delete_user(user_id):
-
-    if current_user.role != "Admin":
-
-        flash(
-            "Access denied.",
-            "danger"
-        )
-
-        return redirect(
-            url_for("dashboard")
-        )
 
     employee = User.query.get_or_404(user_id)
 
-    # =====================================
-    # PREVENT SELF DELETE
-    # =====================================
-
     if employee.id == current_user.id:
-
-        flash(
-            "You cannot delete your own account.",
-            "danger"
-        )
-
-        return redirect(
-            url_for("admin_users")
-        )
+        flash("You cannot delete your own account.", "danger")
+        return redirect(url_for("admin_users"))
 
     db.session.delete(employee)
-
     db.session.commit()
 
-    flash(
-        "Employee deleted successfully.",
-        "success"
-    )
-
-    return redirect(
-        url_for("admin_users")
-    )
+    flash("Employee deleted successfully.", "success")
+    return redirect(url_for("admin_users"))
 
 # =========================================
 # DISABLE USER
@@ -772,48 +487,20 @@ def delete_user(user_id):
 
 @app.route("/disable-user/<int:user_id>")
 @login_required
+@admin_required
 def disable_user(user_id):
-
-    if current_user.role != "Admin":
-
-        flash(
-            "Access denied.",
-            "danger"
-        )
-
-        return redirect(
-            url_for("dashboard")
-        )
 
     employee = User.query.get_or_404(user_id)
 
-    # =====================================
-    # PREVENT SELF DISABLE
-    # =====================================
-
     if employee.id == current_user.id:
-
-        flash(
-            "You cannot disable your own account.",
-            "danger"
-        )
-
-        return redirect(
-            url_for("admin_users")
-        )
+        flash("You cannot disable your own account.", "danger")
+        return redirect(url_for("admin_users"))
 
     employee.is_active_user = False
-
     db.session.commit()
 
-    flash(
-        f"{employee.name} disabled successfully.",
-        "warning"
-    )
-
-    return redirect(
-        url_for("admin_users")
-    )
+    flash(f"{employee.name} disabled successfully.", "warning")
+    return redirect(url_for("admin_users"))
 
 # =========================================
 # ENABLE USER
@@ -821,33 +508,15 @@ def disable_user(user_id):
 
 @app.route("/enable-user/<int:user_id>")
 @login_required
+@admin_required
 def enable_user(user_id):
 
-    if current_user.role != "Admin":
-
-        flash(
-            "Access denied.",
-            "danger"
-        )
-
-        return redirect(
-            url_for("dashboard")
-        )
-
     employee = User.query.get_or_404(user_id)
-
     employee.is_active_user = True
-
     db.session.commit()
 
-    flash(
-        f"{employee.name} enabled successfully.",
-        "success"
-    )
-
-    return redirect(
-        url_for("admin_users")
-    )
+    flash(f"{employee.name} enabled successfully.", "success")
+    return redirect(url_for("admin_users"))
 
 # =========================================
 # EDIT USER
@@ -855,49 +524,25 @@ def enable_user(user_id):
 
 @app.route("/edit-user/<int:user_id>", methods=["GET", "POST"])
 @login_required
+@admin_required
 def edit_user(user_id):
-
-    if current_user.role != "Admin":
-
-        flash(
-            "Access denied.",
-            "danger"
-        )
-
-        return redirect(
-            url_for("dashboard")
-        )
 
     employee = User.query.get_or_404(user_id)
 
     if request.method == "POST":
 
-        employee.username = request.form.get("username")
-
-        employee.name = request.form.get("name")
-
-        employee.email = request.form.get("email")
-
-        employee.role = request.form.get("role")
-
+        employee.username   = request.form.get("username")
+        employee.name       = request.form.get("name")
+        employee.email      = request.form.get("email")
+        employee.role       = request.form.get("role")
         employee.department = request.form.get("department")
 
         db.session.commit()
 
-        flash(
-            "Employee updated successfully.",
-            "success"
-        )
+        flash("Employee updated successfully.", "success")
+        return redirect(url_for("admin_users"))
 
-        return redirect(
-            url_for("admin_users")
-        )
-
-    return render_template(
-        "edit_user.html",
-        employee=employee,
-        user=current_user
-    )
+    return render_template("edit_user.html", employee=employee, user=current_user)
 
 # =========================================
 # LOGOUT
@@ -908,22 +553,14 @@ def edit_user(user_id):
 def logout():
 
     logout_user()
-
-    flash(
-        "Logged out successfully.",
-        "info"
-    )
-
-    return redirect(
-        url_for("login")
-    )
+    flash("Logged out successfully.", "info")
+    return redirect(url_for("login"))
 
 # =========================================
 # CREATE DATABASE TABLES
 # =========================================
 
 with app.app_context():
-
     db.create_all()
 
 # =========================================
@@ -931,7 +568,6 @@ with app.app_context():
 # =========================================
 
 if __name__ == "__main__":
-
     app.run(
         host="0.0.0.0",
         port=5000,
