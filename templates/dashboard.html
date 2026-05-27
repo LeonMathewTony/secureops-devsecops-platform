@@ -2,398 +2,185 @@
 <html lang="en">
 
 <head>
+
     <meta charset="UTF-8">
-
-    <meta name="viewport"
-        content="width=device-width, initial-scale=1.0">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard | SecureOps</title>
 
-    <link rel="stylesheet"
-        href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 
-<body>
-
-    <!-- BACKGROUND -->
+<body class="dashboard-body">
 
     <div class="luxury-bg"></div>
-
-    <!-- ANIMATED LINES -->
-
-    <div class="animated-bg">
-
-        <div class="arrow-line line-a"></div>
-
-        <div class="arrow-line line-b"></div>
-
-        <div class="arrow-line line-c"></div>
-
-    </div>
-
-    <!-- ORBS -->
-
     <div class="floating-orb orb1"></div>
     <div class="floating-orb orb2"></div>
     <div class="floating-orb orb3"></div>
 
-    <!-- MAIN -->
-
     <div class="dashboard-layout">
 
         <!-- SIDEBAR -->
-
         <aside class="sidebar">
 
             <div>
-
-                <!-- LOGO -->
-
-                <div class="logo">
-
-                    Secure<span>Ops</span>
-
-                </div>
-
-                <!-- NAV -->
+                <div class="logo">Secure<span>Ops</span></div>
 
                 <nav class="sidebar-nav">
 
-                    <a href="{{ url_for('dashboard') }}"
-                        class="active">
-
+                    <a href="{{ url_for('dashboard') }}" class="active">
                         <i class="fa-solid fa-chart-line"></i>
-
                         Dashboard
-
                     </a>
 
                     <a href="{{ url_for('projects') }}">
-
                         <i class="fa-solid fa-layer-group"></i>
-
                         Projects
-
                     </a>
 
                     <a href="{{ url_for('tasks') }}">
-
                         <i class="fa-solid fa-list-check"></i>
-
                         Tasks
-
                     </a>
 
                     <a href="{{ url_for('analytics') }}">
-
                         <i class="fa-solid fa-chart-pie"></i>
-
                         Analytics
-
                     </a>
 
-                </nav>
+                    {% if current_user.role == "Admin" %}
+                    <a href="{{ url_for('admin_users') }}">
+                        <i class="fa-solid fa-users"></i>
+                        User Management
+                    </a>
+                    {% endif %}
 
+                </nav>
             </div>
 
-            <!-- LOGOUT -->
-
-            <a href="{{ url_for('logout') }}"
-                class="logout-btn">
-
+            <a href="{{ url_for('logout') }}" class="logout-btn">
                 <i class="fa-solid fa-right-from-bracket"></i>
-
                 Logout
-
             </a>
 
         </aside>
 
-        <!-- CONTENT -->
-
+        <!-- MAIN CONTENT -->
         <main class="main-content">
 
             <!-- TOP -->
-
             <div class="top-section">
-
-                <!-- LEFT -->
-
                 <div>
-
-                    <h1 class="welcome-title">
-
-                        Welcome Back,
-                        {{ user.username }}
-
-                    </h1>
-
-                    <p class="welcome-text">
-
-                        Real-time infrastructure monitoring,
-                        secure deployments and enterprise cloud operations.
-
-                    </p>
-
+                    <h1 class="welcome-title">Welcome Back, {{ user.username }}</h1>
+                    <p class="welcome-text">Enterprise DevSecOps monitoring, infrastructure automation and cloud security operations.</p>
                 </div>
-
-                <!-- PROFILE -->
 
                 <div class="profile-box">
-
-                    <!-- AVATAR -->
-
                     <div class="profile-avatar-wrapper">
-
-                        <div class="profile-avatar">
-
-                            {{ user.username[0] }}
-
-                        </div>
-
+                        <div class="profile-avatar">{{ user.username[0]|upper }}</div>
                         <div class="live-dot"></div>
-
                     </div>
-
-                    <!-- INFO -->
-
                     <div class="profile-info">
-
-                        <h4>
-
-                            {{ user.username }}
-
-                        </h4>
-
-                        <p>
-
-                            Infrastructure Lead
-
-                        </p>
-
+                        <h4>{{ user.username }}</h4>
+                        <p>{{ user.role }}</p>
                     </div>
-
-                    <!-- STATUS -->
-
-                    <div class="profile-status">
-
-                        ● Monitoring Live
-
-                    </div>
-
+                    <div class="profile-status">● Monitoring Live</div>
                 </div>
-
             </div>
+
+            <!-- FLASH MESSAGES -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
 
             <!-- STATS -->
-
             <div class="stats-grid">
 
-                <!-- CARD -->
-
                 <div class="stat-card">
-
                     <i class="fa-solid fa-list-check"></i>
-
-                    <h2>
-
-                        {{ total_tasks }}
-
-                    </h2>
-
-                    <p>
-
-                        Total Tasks
-
-                    </p>
-
+                    <h2>{{ total_tasks }}</h2>
+                    <p>Total Tasks</p>
                 </div>
 
-                <!-- CARD -->
-
                 <div class="stat-card">
-
                     <i class="fa-solid fa-circle-check"></i>
-
-                    <h2>
-
-                        {{ completed_tasks }}
-
-                    </h2>
-
-                    <p>
-
-                        Completed
-
-                    </p>
-
+                    <h2>{{ completed_tasks }}</h2>
+                    <p>Completed</p>
                 </div>
 
-                <!-- CARD -->
-
                 <div class="stat-card">
-
                     <i class="fa-solid fa-clock"></i>
-
-                    <h2>
-
-                        {{ pending_tasks }}
-
-                    </h2>
-
-                    <p>
-
-                        Pending
-
-                    </p>
-
+                    <h2>{{ pending_tasks }}</h2>
+                    <p>Pending</p>
                 </div>
 
-                <!-- CARD -->
-
                 <div class="stat-card">
-
                     <i class="fa-solid fa-spinner"></i>
-
-                    <h2>
-
-                        {{ progress_tasks }}
-
-                    </h2>
-
-                    <p>
-
-                        In Progress
-
-                    </p>
-
+                    <h2>{{ progress_tasks }}</h2>
+                    <p>In Progress</p>
                 </div>
 
             </div>
 
-            <!-- ACTIVITY -->
-
+            <!-- RECENT TASKS -->
             <div class="activity-card">
 
-                <h2>
-
-                    Infrastructure Activity
-
-                </h2>
-
-                <!-- ITEM -->
-
-                <div class="activity-item">
-
-                    <div>
-
-                        <h3>
-
-                            Kubernetes Deployment
-
-                        </h3>
-
-                        <p>
-
-                            Cluster deployment synced successfully.
-
-                        </p>
-
-                    </div>
-
-                    <span class="badge">
-
-                        Live
-
-                    </span>
-
+                <div class="section-header">
+                    <h2>Recent Infrastructure Tasks</h2>
+                    <span class="badge">Live Data</span>
                 </div>
 
-                <!-- ITEM -->
-
-                <div class="activity-item">
-
-                    <div>
-
-                        <h3>
-
-                            Security Scan
-
-                        </h3>
-
-                        <p>
-
-                            Vulnerability analysis completed.
-
-                        </p>
-
+                {% if recent_tasks %}
+                    {% for task in recent_tasks %}
+                    <div class="activity-item">
+                        <div>
+                            <h3>{{ task.title }}</h3>
+                            <p>{{ task.description }}</p>
+                        </div>
+                        <span class="badge">{{ task.status }}</span>
                     </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fa-solid fa-folder-open"></i>
+                        <h3>No Tasks Found</h3>
+                        <p>Create your first infrastructure workflow task.</p>
+                    </div>
+                {% endif %}
 
-                    <span class="badge">
+            </div>
 
-                        Completed
+            <!-- LIVE INFRASTRUCTURE -->
+            <div class="activity-card">
 
-                    </span>
-
+                <div class="section-header">
+                    <h2>Infrastructure Activity</h2>
+                    <span class="badge">Enterprise Live</span>
                 </div>
 
-                <!-- ITEM -->
-
                 <div class="activity-item">
-
-                    <div>
-
-                        <h3>
-
-                            CI/CD Pipeline
-
-                        </h3>
-
-                        <p>
-
-                            Build pipeline currently running.
-
-                        </p>
-
-                    </div>
-
-                    <span class="badge">
-
-                        Running
-
-                    </span>
-
+                    <div><h3>Kubernetes Cluster</h3><p>Production cluster synchronized successfully.</p></div>
+                    <span class="badge">Running</span>
                 </div>
 
-                <!-- ITEM -->
+                <div class="activity-item">
+                    <div><h3>Security Threat Monitoring</h3><p>AI-driven vulnerability scanning active.</p></div>
+                    <span class="badge">Protected</span>
+                </div>
 
                 <div class="activity-item">
+                    <div><h3>CI/CD Pipeline</h3><p>Deployment pipeline executing successfully.</p></div>
+                    <span class="badge">Active</span>
+                </div>
 
-                    <div>
-
-                        <h3>
-
-                            Threat Detection System
-
-                        </h3>
-
-                        <p>
-
-                            AI-based intrusion monitoring enabled.
-
-                        </p>
-
-                    </div>
-
-                    <span class="badge">
-
-                        Protected
-
-                    </span>
-
+                <div class="activity-item">
+                    <div><h3>AWS Infrastructure</h3><p>EC2 monitoring and load balancing enabled.</p></div>
+                    <span class="badge">Healthy</span>
                 </div>
 
             </div>
@@ -403,5 +190,4 @@
     </div>
 
 </body>
-
 </html>

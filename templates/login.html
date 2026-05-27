@@ -5,202 +5,121 @@
 
     <meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>
-        SecureOps Login
-    </title>
+    <title>SecureOps Enterprise Portal</title>
 
-    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
 
-    <link
-        rel="stylesheet"
-        href="{{ url_for('static', filename='login.css') }}"
-    >
-
-    <!-- FONT AWESOME -->
-
-    <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-    >
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
 </head>
 
 <body>
 
-    <!-- PREMIUM BACKGROUND -->
-
+    <!-- BACKGROUND -->
     <div class="luxury-bg">
-
         <span class="lux-line line1"></span>
-
         <span class="lux-line line2"></span>
-
         <span class="lux-line line3"></span>
-
     </div>
 
-    <!-- FLOATING GLOW -->
-
     <div class="floating-orb orb1"></div>
-
     <div class="floating-orb orb2"></div>
-
     <div class="floating-orb orb3"></div>
 
-    <!-- MAIN CONTAINER -->
-
+    <!-- MAIN -->
     <div class="login-wrapper">
 
         <!-- LEFT -->
-
         <div class="login-left">
 
-            <p class="mini-title">
+            <p class="mini-title">SECUREOPS ENTERPRISE PLATFORM</p>
 
-                SECURE DEVSECOPS PLATFORM
-
-            </p>
-
-            <h1>
-
-                Build secure <br>
-                modern workflows.
-
-            </h1>
+            <h1>Secure cloud <br> infrastructure operations.</h1>
 
             <p class="description">
-
-                Create, manage and secure
-                your cloud infrastructure with
-                enterprise-grade monitoring and automation.
-
+                Centralized DevSecOps platform for infrastructure monitoring,
+                deployment automation, cloud security, and enterprise operations management.
             </p>
 
         </div>
-        
 
         <!-- RIGHT -->
-
         <div class="login-right">
 
             <div class="login-card">
 
-                <h2>
+                <h2>Authorized Access</h2>
 
-                    Welcome Back
-
-                </h2>
-
-                <p class="login-sub">
-
-                    Sign in to continue.
-
-                </p>
+                <p class="login-sub">Sign in using your enterprise credentials.</p>
 
                 <!-- ERROR -->
-
                 {% if error %}
-
-                <div class="error-box">
-
+                <div class="flash-message danger">
+                    <i class="fa-solid fa-circle-exclamation"></i>
                     {{ error }}
-
                 </div>
-
                 {% endif %}
 
-                <!-- FORM -->
+                <!-- FLASH MESSAGES -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
 
-                <form method="POST">
-
-                    <!-- EMAIL -->
+                <!-- FORM — autocomplete off prevents autofill -->
+                <form method="POST" autocomplete="off">
 
                     <div class="input-group">
-
                         <i class="fa-solid fa-envelope"></i>
-
                         <input
                             type="email"
                             name="email"
-                            placeholder="Email Address"
+                            placeholder="Enterprise Email"
+                            autocomplete="off"
                             required
                         >
-
                     </div>
 
-                    <!-- PASSWORD -->
-
                     <div class="input-group">
-
                         <i class="fa-solid fa-lock"></i>
-
                         <input
                             type="password"
                             name="password"
                             placeholder="Password"
+                            autocomplete="new-password"
                             required
                         >
-
                     </div>
 
-                    <!-- BUTTON -->
-
-                    <button
-                        type="submit"
-                        class="login-btn"
-                    >
-
-                        Login
-
+                    <button type="submit" class="login-btn">
+                        Access Platform
                     </button>
 
                 </form>
 
-                <!-- OPTIONS -->
-
                 <div class="login-options">
-
                     <label class="remember-box">
-
                         <input type="checkbox">
-
-                        <span>
-
-                            Remember Me
-
-                        </span>
-
+                        <span>Remember Session</span>
                     </label>
-
-                    <a
-                        href="/forgot-password"
-                        class="forgot-link"
-                    >
-
-                        Forgot Password?
-
-                    </a>
-
+                    <a href="/forgot-password" class="forgot-link">Reset Password</a>
                 </div>
 
-                <!-- REGISTER -->
+                <div class="enterprise-box">
+                    <p>Authorized personnel only.<br>Contact system administrator for account access.</p>
+                </div>
 
-                <p class="bottom-text">
-
-                    New here?
-
-                    <a href="/register">
-
-                        Create Account
-
-                    </a>
-
-                </p>
+                <div class="security-box">
+                    <p class="security-text">
+                        Unauthorized access is prohibited.<br>
+                        All login activities are monitored and logged.
+                    </p>
+                </div>
 
             </div>
 
@@ -209,5 +128,4 @@
     </div>
 
 </body>
-
 </html>

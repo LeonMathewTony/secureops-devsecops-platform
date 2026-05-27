@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+
+        Enterprise User Management | SecureOps
+
+    </title>
+
+    <!-- CSS -->
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+    <!-- FONT AWESOME -->
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    >
+
+</head>
+
+<body class="dashboard-body">
+
+    <!-- BACKGROUND -->
+
+    <div class="luxury-bg"></div>
+
+    <div class="animated-bg">
+
+        <div class="arrow-line line-a"></div>
+
+        <div class="arrow-line line-b"></div>
+
+        <div class="arrow-line line-c"></div>
+
+    </div>
+
+    <div class="floating-orb orb1"></div>
+
+    <div class="floating-orb orb2"></div>
+
+    <div class="floating-orb orb3"></div>
+
+    <!-- MAIN -->
+
+    <div class="dashboard-layout">
+
+        <!-- SIDEBAR -->
+
+        <aside class="sidebar">
+
+            <div>
+
+                <!-- LOGO -->
+
+                <div class="logo">
+
+                    Secure<span>Ops</span>
+
+                </div>
+
+                <!-- NAV -->
+
+                <nav class="sidebar-nav">
+
+                    <a href="{{ url_for('dashboard') }}">
+
+                        <i class="fa-solid fa-chart-line"></i>
+
+                        Dashboard
+
+                    </a>
+
+                    <a href="{{ url_for('projects') }}">
+
+                        <i class="fa-solid fa-layer-group"></i>
+
+                        Projects
+
+                    </a>
+
+                    <a href="{{ url_for('tasks') }}">
+
+                        <i class="fa-solid fa-list-check"></i>
+
+                        Tasks
+
+                    </a>
+
+                    <a href="{{ url_for('analytics') }}">
+
+                        <i class="fa-solid fa-chart-pie"></i>
+
+                        Analytics
+
+                    </a>
+
+                    <a
+                        href="{{ url_for('admin_users') }}"
+                        class="active"
+                    >
+
+                        <i class="fa-solid fa-users"></i>
+
+                        User Management
+
+                    </a>
+
+                </nav>
+
+            </div>
+
+            <!-- LOGOUT -->
+
+            <a
+                href="{{ url_for('logout') }}"
+                class="logout-btn"
+            >
+
+                <i class="fa-solid fa-right-from-bracket"></i>
+
+                Logout
+
+            </a>
+
+        </aside>
+
+        <!-- MAIN CONTENT -->
+
+        <main class="main-content">
+
+            <!-- TOP -->
+
+            <div class="top-section">
+
+                <div>
+
+                    <h1 class="welcome-title">
+
+                        Enterprise User Management
+
+                    </h1>
+
+                    <p class="welcome-text">
+
+                        Securely manage employees,
+                        permissions and enterprise access controls.
+
+                    </p>
+
+                </div>
+
+                <!-- PROFILE -->
+
+                <div class="profile-box">
+
+                    <div class="profile-avatar-wrapper">
+
+                        <div class="profile-avatar">
+
+                            {{ current_user.username[0] }}
+
+                        </div>
+
+                        <div class="live-dot"></div>
+
+                    </div>
+
+                    <div class="profile-info">
+
+                        <h4>
+
+                            {{ current_user.username }}
+
+                        </h4>
+
+                        <p>
+
+                            {{ current_user.role }}
+
+                        </p>
+
+                    </div>
+
+                    <div class="profile-status">
+
+                        ● Admin Access
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- CREATE USER -->
+
+            <section class="glass-card create-user-card">
+
+                <div class="section-header">
+
+                    <h2>
+
+                        <i class="fa-solid fa-user-plus"></i>
+
+                        Create Employee Account
+
+                    </h2>
+
+                </div>
+
+                <!-- FORM -->
+
+                <form
+                    method="POST"
+                    class="task-form"
+                >
+
+                    <div class="form-group">
+
+                        <label>
+
+                            Username
+
+                        </label>
+
+                        <input
+                            type="text"
+                            name="username"
+                            placeholder="Enter username"
+                            required
+                        >
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label>
+
+                            Full Name
+
+                        </label>
+
+                        <input
+                            type="text"
+                            name="name"
+                            placeholder="Employee full name"
+                            required
+                        >
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label>
+
+                            Email Address
+
+                        </label>
+
+                        <input
+                            type="email"
+                            name="email"
+                            placeholder="employee@secureops.com"
+                            required
+                        >
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label>
+
+                            Password
+
+                        </label>
+
+                        <input
+                            type="password"
+                            name="password"
+                            placeholder="Create secure password"
+                            required
+                        >
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label>
+
+                            Role
+
+                        </label>
+
+                        <select name="role">
+
+                            <option value="Admin">
+
+                                Admin
+
+                            </option>
+
+                            <option value="DevOps Engineer">
+
+                                DevOps Engineer
+
+                            </option>
+
+                            <option value="Security Analyst">
+
+                                Security Analyst
+
+                            </option>
+
+                            <option value="Cloud Engineer">
+
+                                Cloud Engineer
+
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label>
+
+                            Department
+
+                        </label>
+
+                        <select name="department">
+
+                            <option value="Infrastructure">
+
+                                Infrastructure
+
+                            </option>
+
+                            <option value="Security Operations">
+
+                                Security Operations
+
+                            </option>
+
+                            <option value="Cloud Engineering">
+
+                                Cloud Engineering
+
+                            </option>
+
+                            <option value="DevSecOps">
+
+                                DevSecOps
+
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <!-- BUTTON -->
+
+                    <button
+                        type="submit"
+                        class="primary-btn"
+                    >
+
+                        <i class="fa-solid fa-user-plus"></i>
+
+                        Create Employee
+
+                    </button>
+
+                </form>
+
+            </section>
+
+            <!-- EMPLOYEE TABLE -->
+
+            <section class="glass-card users-table-card">
+
+                <div class="section-header">
+
+                    <h2>
+
+                        <i class="fa-solid fa-users"></i>
+
+                        Organization Employees
+
+                    </h2>
+
+                    <span class="badge">
+
+                        {{ users|length }} Employees
+
+                    </span>
+
+                </div>
+
+                <!-- TABLE -->
+
+                <div class="users-table-wrapper">
+
+                    <table class="users-table">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>Employee</th>
+
+                                <th>Role</th>
+
+                                <th>Department</th>
+
+                                <th>Status</th>
+
+                                <th>Created</th>
+
+                                <th>Actions</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            {% for employee in users %}
+
+                            <tr>
+
+                                <!-- EMPLOYEE -->
+
+                                <td>
+
+                                    <div class="employee-info">
+
+                                        <div class="employee-avatar">
+
+                                            {{ employee.username[0] }}
+
+                                        </div>
+
+                                        <div>
+
+                                            <h4>
+
+                                                {{ employee.name }}
+
+                                            </h4>
+
+                                            <p>
+
+                                                {{ employee.email }}
+
+                                            </p>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+                                <!-- ROLE -->
+
+                                <td>
+
+                                    {% if employee.role == "Admin" %}
+
+                                    <span class="role-badge admin-role">
+
+                                        Admin
+
+                                    </span>
+
+                                    {% elif employee.role == "Security Analyst" %}
+
+                                    <span class="role-badge security-role">
+
+                                        Security Analyst
+
+                                    </span>
+
+                                    {% else %}
+
+                                    <span class="role-badge devops-role">
+
+                                        {{ employee.role }}
+
+                                    </span>
+
+                                    {% endif %}
+
+                                </td>
+
+                                <!-- DEPARTMENT -->
+
+                                <td>
+
+                                    {{ employee.department }}
+
+                                </td>
+
+                                <!-- STATUS -->
+
+                                <td>
+
+                                    {% if employee.is_active_user %}
+
+                                    <span class="status-active">
+
+                                        ● Active
+
+                                    </span>
+
+                                    {% else %}
+
+                                    <span class="status-disabled">
+
+                                        ● Disabled
+
+                                    </span>
+
+                                    {% endif %}
+
+                                </td>
+
+                                <!-- DATE -->
+
+                                <td>
+
+                                    {{ employee.created_at.strftime('%d %b %Y') }}
+
+                                </td>
+
+                                <!-- ACTIONS -->
+
+                                <td>
+
+                                    <div class="action-buttons">
+
+                                        <!-- EDIT -->
+
+                                        <a
+                                            href="/edit-user/{{ employee.id }}"
+                                            class="action-btn edit-action"
+                                        >
+
+                                            <i class="fa-solid fa-pen"></i>
+
+                                        </a>
+
+                                        <!-- DISABLE -->
+
+                                        {% if employee.is_active_user %}
+
+                                        <a
+                                            href="/disable-user/{{ employee.id }}"
+                                            class="action-btn disable-action"
+                                        >
+
+                                            <i class="fa-solid fa-user-slash"></i>
+
+                                        </a>
+
+                                        {% else %}
+
+                                        <a
+                                            href="/enable-user/{{ employee.id }}"
+                                            class="action-btn enable-action"
+                                        >
+
+                                            <i class="fa-solid fa-user-check"></i>
+
+                                        </a>
+
+                                        {% endif %}
+
+                                        <!-- DELETE -->
+
+                                        {% if employee.id != current_user.id %}
+
+                                        <a
+                                            href="/delete-user/{{ employee.id }}"
+                                            class="action-btn delete-action"
+                                            onclick="return confirm('Delete this employee?')"
+                                        >
+
+                                            <i class="fa-solid fa-trash"></i>
+
+                                        </a>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+</body>
+
+</html>

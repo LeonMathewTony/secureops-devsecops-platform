@@ -4,6 +4,8 @@
 
 import os
 
+from datetime import datetime
+
 from flask import (
     Flask,
     render_template,
@@ -21,24 +23,16 @@ from flask_login import (
     current_user
 )
 
-from werkzeug.security import (
-    generate_password_hash,
-    check_password_hash
-)
-
-# =========================================
-# IMPORT DATABASE MODELS
-# =========================================
-
 from models import (
     db,
     bcrypt,
     User,
-    Task
+    Task,
+    Project
 )
 
 # =========================================
-# CREATE APP
+# CREATE FLASK APP
 # =========================================
 
 app = Flask(__name__)
@@ -47,18 +41,18 @@ app = Flask(__name__)
 # SECRET KEY
 # =========================================
 
-app.config['SECRET_KEY'] = 'secureops_secret_key'
+app.config["SECRET_KEY"] = "secureops_enterprise_secret"
 
 # =========================================
 # DATABASE CONFIG
 # =========================================
 
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv(
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(
     "DATABASE_URL",
-    "postgresql://postgres:postgres@database:5432/secureops"
+    "postgresql://postgres:postgres@db:5432/secureopsdb"
 )
 
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # =========================================
 # INITIALIZE DATABASE
@@ -117,57 +111,51 @@ def register():
 
         username = request.form.get("username")
 
+        name = request.form.get("username")
+
         email = request.form.get("email")
 
         password = request.form.get("password")
 
-        role = request.form.get(
-            "role",
-            "DevOps Engineer"
-        )
+        # =====================================
+        # CHECK EXISTING USER
+        # =====================================
 
-        # CHECK EXISTING EMAIL
-
-        existing_user = User.query.filter_by(
-            email=email
+        existing_user = User.query.filter(
+            (User.email == email) |
+            (User.username == username)
         ).first()
 
         if existing_user:
 
             flash(
-                "Email already exists",
+                "Email or username already exists.",
                 "danger"
             )
 
-            return redirect(
-                url_for("register")
+            return render_template(
+                "register.html",
+                error="Email or username already exists."
             )
 
-        # HASH PASSWORD
-
-        hashed_password = generate_password_hash(
-            password
-        )
-
+        # =====================================
         # CREATE USER
+        # =====================================
 
         new_user = User(
-
             username=username,
-
-            email=email,
-
-            password=hashed_password,
-
-            role=role
+            name=name,
+            email=email
         )
+
+        new_user.set_password(password)
 
         db.session.add(new_user)
 
         db.session.commit()
 
         flash(
-            "Account Created Successfully",
+            "Account created successfully.",
             "success"
         )
 
@@ -202,15 +190,35 @@ def login():
             email=email
         ).first()
 
-        if user and check_password_hash(
-            user.password,
-            password
-        ):
+        # =====================================
+        # CHECK PASSWORD
+        # =====================================
+
+        if user and user.check_password(password):
+
+            # =====================================
+            # BLOCK DISABLED USERS
+            # =====================================
+
+            if not user.is_active_user:
+
+                return render_template(
+                    "login.html",
+                    error="Your account has been disabled."
+                )
+
+            # =====================================
+            # UPDATE LAST LOGIN
+            # =====================================
+
+            user.last_login = datetime.utcnow()
+
+            db.session.commit()
 
             login_user(user)
 
             flash(
-                "Login Successful",
+                "Login successful.",
                 "success"
             )
 
@@ -218,13 +226,44 @@ def login():
                 url_for("dashboard")
             )
 
-        flash(
-            "Invalid Email or Password",
-            "danger"
-        )
+        else:
+
+            return render_template(
+                "login.html",
+                error="Invalid email or password."
+            )
 
     return render_template(
         "login.html"
+    )
+
+# =========================================
+# FORGOT PASSWORD
+# =========================================
+
+@app.route("/forgot-password", methods=["GET", "POST"])
+def forgot_password():
+
+    if request.method == "POST":
+
+        email = request.form.get("email")
+
+        user = User.query.filter_by(
+            email=email
+        ).first()
+
+        flash(
+            "If that email exists, a reset link has been sent.",
+            "info"
+        )
+
+        return render_template(
+            "forgot_password.html",
+            success="If that email exists, a reset link has been sent."
+        )
+
+    return render_template(
+        "forgot_password.html"
     )
 
 # =========================================
@@ -261,19 +300,12 @@ def dashboard():
     ).limit(5).all()
 
     return render_template(
-
         "dashboard.html",
-
         user=current_user,
-
         total_tasks=total_tasks,
-
         completed_tasks=completed_tasks,
-
         pending_tasks=pending_tasks,
-
         progress_tasks=progress_tasks,
-
         recent_tasks=recent_tasks
     )
 
@@ -281,15 +313,108 @@ def dashboard():
 # PROJECTS
 # =========================================
 
-@app.route("/projects")
+@app.route("/projects", methods=["GET", "POST"])
 @login_required
 def projects():
 
+    if request.method == "POST":
+
+        name = request.form.get("name")
+
+        description = request.form.get("description")
+
+        status = request.form.get(
+            "status",
+            "Active"
+        )
+
+        priority = request.form.get(
+            "priority",
+            "Medium"
+        )
+
+        technology = request.form.get(
+            "technology",
+            ""
+        )
+
+        if not name or not description:
+
+            flash(
+                "Please fill all required fields.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("projects")
+            )
+
+        new_project = Project(
+            name=name,
+            description=description,
+            status=status,
+            priority=priority,
+            technology=technology,
+            user_id=current_user.id
+        )
+
+        db.session.add(new_project)
+
+        db.session.commit()
+
+        flash(
+            "Project created successfully.",
+            "success"
+        )
+
+        return redirect(
+            url_for("projects")
+        )
+
+    all_projects = Project.query.filter_by(
+        user_id=current_user.id
+    ).order_by(
+        Project.created_at.desc()
+    ).all()
+
     return render_template(
-
         "projects.html",
+        user=current_user,
+        projects=all_projects
+    )
 
-        user=current_user
+# =========================================
+# DELETE PROJECT
+# =========================================
+
+@app.route("/delete_project/<int:id>")
+@login_required
+def delete_project(id):
+
+    project = Project.query.get_or_404(id)
+
+    if project.user_id != current_user.id:
+
+        flash(
+            "Unauthorized action.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("projects")
+        )
+
+    db.session.delete(project)
+
+    db.session.commit()
+
+    flash(
+        "Project deleted successfully.",
+        "success"
+    )
+
+    return redirect(
+        url_for("projects")
     )
 
 # =========================================
@@ -304,9 +429,7 @@ def tasks():
 
         title = request.form.get("title")
 
-        description = request.form.get(
-            "description"
-        )
+        description = request.form.get("description")
 
         status = request.form.get(
             "status",
@@ -321,7 +444,7 @@ def tasks():
         if not title or not description:
 
             flash(
-                "Please fill all fields",
+                "Please fill all required fields.",
                 "danger"
             )
 
@@ -329,18 +452,11 @@ def tasks():
                 url_for("tasks")
             )
 
-        # CREATE TASK
-
         new_task = Task(
-
             title=title,
-
             description=description,
-
             status=status,
-
             priority=priority,
-
             user_id=current_user.id
         )
 
@@ -349,7 +465,7 @@ def tasks():
         db.session.commit()
 
         flash(
-            "Task Added Successfully",
+            "Task created successfully.",
             "success"
         )
 
@@ -364,11 +480,62 @@ def tasks():
     ).all()
 
     return render_template(
-
         "tasks.html",
-
         tasks=all_tasks,
+        user=current_user
+    )
 
+# =========================================
+# EDIT TASK
+# =========================================
+
+@app.route("/edit_task/<int:id>", methods=["GET", "POST"])
+@login_required
+def edit_task(id):
+
+    task = Task.query.get_or_404(id)
+
+    if task.user_id != current_user.id:
+
+        flash(
+            "Unauthorized action.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("tasks")
+        )
+
+    if request.method == "POST":
+
+        task.title = request.form.get("title")
+
+        task.description = request.form.get("description")
+
+        task.status = request.form.get(
+            "status",
+            task.status
+        )
+
+        task.priority = request.form.get(
+            "priority",
+            task.priority
+        )
+
+        db.session.commit()
+
+        flash(
+            "Task updated successfully.",
+            "success"
+        )
+
+        return redirect(
+            url_for("tasks")
+        )
+
+    return render_template(
+        "edit_task.html",
+        task=task,
         user=current_user
     )
 
@@ -385,7 +552,7 @@ def delete_task(id):
     if task.user_id != current_user.id:
 
         flash(
-            "Unauthorized Action",
+            "Unauthorized action.",
             "danger"
         )
 
@@ -398,7 +565,7 @@ def delete_task(id):
     db.session.commit()
 
     flash(
-        "Task Deleted Successfully",
+        "Task deleted successfully.",
         "success"
     )
 
@@ -434,17 +601,11 @@ def analytics():
     ).count()
 
     return render_template(
-
         "analytics.html",
-
         user=current_user,
-
         total_tasks=total_tasks,
-
         completed_tasks=completed_tasks,
-
         pending_tasks=pending_tasks,
-
         progress_tasks=progress_tasks
     )
 
@@ -461,12 +622,281 @@ def profile():
     ).count()
 
     return render_template(
-
         "profile.html",
-
         user=current_user,
-
         total_tasks=total_tasks
+    )
+
+# =========================================
+# ADMIN USERS
+# =========================================
+
+@app.route("/admin/users", methods=["GET", "POST"])
+@login_required
+def admin_users():
+
+    # =====================================
+    # ADMIN ONLY
+    # =====================================
+
+    if current_user.role != "Admin":
+
+        flash(
+            "Access denied.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("dashboard")
+        )
+
+    # =====================================
+    # CREATE USER
+    # =====================================
+
+    if request.method == "POST":
+
+        username = request.form.get("username")
+
+        name = request.form.get("name")
+
+        email = request.form.get("email")
+
+        password = request.form.get("password")
+
+        role = request.form.get(
+            "role",
+            "DevOps Engineer"
+        )
+
+        department = request.form.get(
+            "department",
+            "Infrastructure"
+        )
+
+        existing_user = User.query.filter(
+            (User.email == email) |
+            (User.username == username)
+        ).first()
+
+        if existing_user:
+
+            flash(
+                "Email or username already exists.",
+                "danger"
+            )
+
+        else:
+
+            new_user = User(
+                username=username,
+                name=name,
+                email=email,
+                role=role,
+                department=department
+            )
+
+            new_user.set_password(password)
+
+            db.session.add(new_user)
+
+            db.session.commit()
+
+            flash(
+                f"{name} created successfully.",
+                "success"
+            )
+
+    users = User.query.order_by(
+        User.created_at.desc()
+    ).all()
+
+    return render_template(
+        "admin_users.html",
+        users=users,
+        user=current_user
+    )
+
+# =========================================
+# DELETE USER
+# =========================================
+
+@app.route("/delete-user/<int:user_id>")
+@login_required
+def delete_user(user_id):
+
+    if current_user.role != "Admin":
+
+        flash(
+            "Access denied.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("dashboard")
+        )
+
+    employee = User.query.get_or_404(user_id)
+
+    # =====================================
+    # PREVENT SELF DELETE
+    # =====================================
+
+    if employee.id == current_user.id:
+
+        flash(
+            "You cannot delete your own account.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("admin_users")
+        )
+
+    db.session.delete(employee)
+
+    db.session.commit()
+
+    flash(
+        "Employee deleted successfully.",
+        "success"
+    )
+
+    return redirect(
+        url_for("admin_users")
+    )
+
+# =========================================
+# DISABLE USER
+# =========================================
+
+@app.route("/disable-user/<int:user_id>")
+@login_required
+def disable_user(user_id):
+
+    if current_user.role != "Admin":
+
+        flash(
+            "Access denied.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("dashboard")
+        )
+
+    employee = User.query.get_or_404(user_id)
+
+    # =====================================
+    # PREVENT SELF DISABLE
+    # =====================================
+
+    if employee.id == current_user.id:
+
+        flash(
+            "You cannot disable your own account.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("admin_users")
+        )
+
+    employee.is_active_user = False
+
+    db.session.commit()
+
+    flash(
+        f"{employee.name} disabled successfully.",
+        "warning"
+    )
+
+    return redirect(
+        url_for("admin_users")
+    )
+
+# =========================================
+# ENABLE USER
+# =========================================
+
+@app.route("/enable-user/<int:user_id>")
+@login_required
+def enable_user(user_id):
+
+    if current_user.role != "Admin":
+
+        flash(
+            "Access denied.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("dashboard")
+        )
+
+    employee = User.query.get_or_404(user_id)
+
+    employee.is_active_user = True
+
+    db.session.commit()
+
+    flash(
+        f"{employee.name} enabled successfully.",
+        "success"
+    )
+
+    return redirect(
+        url_for("admin_users")
+    )
+
+# =========================================
+# EDIT USER
+# =========================================
+
+@app.route("/edit-user/<int:user_id>", methods=["GET", "POST"])
+@login_required
+def edit_user(user_id):
+
+    if current_user.role != "Admin":
+
+        flash(
+            "Access denied.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("dashboard")
+        )
+
+    employee = User.query.get_or_404(user_id)
+
+    if request.method == "POST":
+
+        employee.username = request.form.get("username")
+
+        employee.name = request.form.get("name")
+
+        employee.email = request.form.get("email")
+
+        employee.role = request.form.get("role")
+
+        employee.department = request.form.get("department")
+
+        db.session.commit()
+
+        flash(
+            "Employee updated successfully.",
+            "success"
+        )
+
+        return redirect(
+            url_for("admin_users")
+        )
+
+    return render_template(
+        "edit_user.html",
+        employee=employee,
+        user=current_user
     )
 
 # =========================================
@@ -480,7 +910,7 @@ def logout():
     logout_user()
 
     flash(
-        "Logged Out Successfully",
+        "Logged out successfully.",
         "info"
     )
 
@@ -489,7 +919,7 @@ def logout():
     )
 
 # =========================================
-# CREATE DATABASE
+# CREATE DATABASE TABLES
 # =========================================
 
 with app.app_context():
@@ -497,16 +927,13 @@ with app.app_context():
     db.create_all()
 
 # =========================================
-# RUN APP
+# RUN APPLICATION
 # =========================================
 
 if __name__ == "__main__":
 
     app.run(
-
         host="0.0.0.0",
-
         port=5000,
-
         debug=True
     )

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -12,15 +12,18 @@
     <!-- CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
-    <!-- Font Awesome -->
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- FONT AWESOME -->
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    >
 
 </head>
 
 <body class="dashboard-body">
 
-    <!-- Animated Background -->
+    <!-- BACKGROUND -->
+
     <div class="animated-bg">
 
         <span class="line line1"></span>
@@ -34,6 +37,7 @@
     <div class="dashboard-layout">
 
         <!-- SIDEBAR -->
+
         <aside class="sidebar">
 
             <div class="sidebar-top">
@@ -45,23 +49,35 @@
                 <nav class="sidebar-nav">
 
                     <a href="/dashboard">
+
                         <i class="fas fa-chart-line"></i>
+
                         Dashboard
+
                     </a>
 
                     <a href="/projects">
+
                         <i class="fas fa-layer-group"></i>
+
                         Projects
+
                     </a>
 
                     <a href="/tasks" class="active">
+
                         <i class="fas fa-list-check"></i>
+
                         Tasks
+
                     </a>
 
                     <a href="/analytics">
+
                         <i class="fas fa-chart-pie"></i>
+
                         Analytics
+
                     </a>
 
                 </nav>
@@ -78,30 +94,36 @@
 
         </aside>
 
-        <!-- MAIN CONTENT -->
+        <!-- MAIN -->
+
         <main class="main-content">
 
-            <!-- TOP -->
+            <!-- TOP BAR -->
+
             <div class="top-bar">
 
                 <div>
 
                     <h1 class="page-title">
-                        Task Management
+                        Infrastructure Tasks
                     </h1>
 
                     <p class="page-subtitle">
-                        Create and manage infrastructure workflows dynamically.
+
+                        Manage DevSecOps workflows,
+                        deployments and security operations.
+
                     </p>
 
                 </div>
 
                 <!-- PROFILE -->
+
                 <div class="profile-box">
 
                     <div class="profile-avatar">
 
-                        L
+                        {{ current_user.username[0] }}
 
                         <span class="live-dot"></span>
 
@@ -109,9 +131,13 @@
 
                     <div>
 
-                        <h4>Leon</h4>
+                        <h4>
+                            {{ current_user.username }}
+                        </h4>
 
-                        <p>Infrastructure Lead</p>
+                        <p>
+                            {{ current_user.role }}
+                        </p>
 
                     </div>
 
@@ -119,43 +145,135 @@
 
             </div>
 
-            <!-- TASK FORM -->
+            <!-- CREATE TASK -->
+
             <section class="glass-card create-task-card">
 
-                <h2 class="section-heading">
-                    Create New Task
-                </h2>
+                <div class="section-header">
+
+                    <h2 class="section-heading">
+
+                        <i class="fas fa-plus-circle"></i>
+
+                        Create New Task
+
+                    </h2>
+
+                </div>
 
                 <form method="POST" class="task-form">
 
-                    <input
-                        type="text"
-                        name="title"
-                        placeholder="Task Title"
-                        required>
+                    <!-- TITLE -->
 
-                    <textarea
-                        name="description"
-                        placeholder="Task Description"
-                        required></textarea>
+                    <div class="form-group">
 
-                    <select name="status">
+                        <label>
 
-                        <option value="Pending">
-                            Pending
-                        </option>
+                            Task Title
 
-                        <option value="In Progress">
-                            In Progress
-                        </option>
+                        </label>
 
-                        <option value="Completed">
-                            Completed
-                        </option>
+                        <input
+                            type="text"
+                            name="title"
+                            placeholder="Example: Deploy Kubernetes Cluster"
+                            required
+                        >
 
-                    </select>
+                    </div>
 
-                    <button type="submit" class="primary-btn">
+                    <!-- DESCRIPTION -->
+
+                    <div class="form-group">
+
+                        <label>
+
+                            Description
+
+                        </label>
+
+                        <textarea
+                            name="description"
+                            placeholder="Enter task details..."
+                            required
+                        ></textarea>
+
+                    </div>
+
+                    <!-- PRIORITY -->
+
+                    <div class="form-group">
+
+                        <label>
+
+                            Priority Level
+
+                        </label>
+
+                        <select name="priority">
+
+                            <option value="Low">
+
+                                Low
+
+                            </option>
+
+                            <option value="Medium">
+
+                                Medium
+
+                            </option>
+
+                            <option value="High">
+
+                                High
+
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <!-- STATUS -->
+
+                    <div class="form-group">
+
+                        <label>
+
+                            Status
+
+                        </label>
+
+                        <select name="status">
+
+                            <option value="Pending">
+
+                                Pending
+
+                            </option>
+
+                            <option value="In Progress">
+
+                                In Progress
+
+                            </option>
+
+                            <option value="Completed">
+
+                                Completed
+
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <!-- BUTTON -->
+
+                    <button
+                        type="submit"
+                        class="primary-btn"
+                    >
 
                         <i class="fas fa-plus"></i>
 
@@ -167,12 +285,49 @@
 
             </section>
 
-            <!-- TASKS -->
+            <!-- TASKS SECTION -->
+
             <section class="tasks-section">
 
-                <h2 class="section-title">
-                    Your Tasks
-                </h2>
+                <div class="section-header">
+
+                    <h2 class="section-title">
+
+                        Infrastructure Workflows
+
+                    </h2>
+
+                    <span class="task-count">
+
+                        {{ tasks|length }} Tasks
+
+                    </span>
+
+                </div>
+
+                <!-- EMPTY -->
+
+                {% if tasks|length == 0 %}
+
+                <div class="empty-state">
+
+                    <i class="fas fa-folder-open"></i>
+
+                    <h3>
+                        No Tasks Available
+                    </h3>
+
+                    <p>
+
+                        Create your first DevSecOps workflow task.
+
+                    </p>
+
+                </div>
+
+                {% else %}
+
+                <!-- TASK GRID -->
 
                 <div class="tasks-container">
 
@@ -180,82 +335,132 @@
 
                     <div class="task-card">
 
-                        <!-- ICON -->
-                        <div class="task-icon">
+                        <!-- TOP -->
+
+                        <div class="task-top">
+
+                            <div class="task-icon">
+
+                                {% if task.status == "Pending" %}
+
+                                <i class="fas fa-clock"></i>
+
+                                {% elif task.status == "In Progress" %}
+
+                                <i class="fas fa-spinner"></i>
+
+                                {% else %}
+
+                                <i class="fas fa-circle-check"></i>
+
+                                {% endif %}
+
+                            </div>
+
+                            <!-- DELETE -->
+
+                            <a
+                                href="/delete_task/{{ task.id }}"
+                                class="delete-btn"
+                            >
+
+                                <i class="fas fa-trash"></i>
+
+                            </a>
+
+                        </div>
+
+                        <!-- TITLE -->
+
+                        <h3 class="task-title">
+
+                            {{ task.title }}
+
+                        </h3>
+
+                        <!-- DESC -->
+
+                        <p class="task-description">
+
+                            {{ task.description }}
+
+                        </p>
+
+                        <!-- FOOTER -->
+
+                        <div class="task-footer">
+
+                            <!-- STATUS -->
 
                             {% if task.status == "Pending" %}
 
-                            <i class="fas fa-clock"></i>
+                            <div class="task-status status-pending">
+
+                                <i class="fas fa-clock"></i>
+
+                                Pending
+
+                            </div>
 
                             {% elif task.status == "In Progress" %}
 
-                            <i class="fas fa-spinner"></i>
+                            <div class="task-status status-progress">
+
+                                <i class="fas fa-spinner"></i>
+
+                                In Progress
+
+                            </div>
 
                             {% else %}
 
-                            <i class="fas fa-circle-check"></i>
+                            <div class="task-status status-completed">
+
+                                <i class="fas fa-check-circle"></i>
+
+                                Completed
+
+                            </div>
+
+                            {% endif %}
+
+                            <!-- PRIORITY -->
+
+                            {% if task.priority == "High" %}
+
+                            <div class="priority-badge high-priority">
+
+                                High
+
+                            </div>
+
+                            {% elif task.priority == "Medium" %}
+
+                            <div class="priority-badge medium-priority">
+
+                                Medium
+
+                            </div>
+
+                            {% else %}
+
+                            <div class="priority-badge low-priority">
+
+                                Low
+
+                            </div>
 
                             {% endif %}
 
                         </div>
-
-                        <!-- DELETE -->
-                        <a
-                            href="/delete_task/{{ task.id }}"
-                            class="delete-btn">
-
-                            <i class="fas fa-trash"></i>
-
-                        </a>
-
-                        <!-- TITLE -->
-                        <h3>
-                            {{ task.title }}
-                        </h3>
-
-                        <!-- DESC -->
-                        <p>
-                            {{ task.description }}
-                        </p>
-
-                        <!-- STATUS -->
-                        {% if task.status == "Pending" %}
-
-                        <div class="task-status status-pending">
-
-                            <i class="fas fa-clock"></i>
-
-                            Pending
-
-                        </div>
-
-                        {% elif task.status == "In Progress" %}
-
-                        <div class="task-status status-progress">
-
-                            <i class="fas fa-spinner"></i>
-
-                            In Progress
-
-                        </div>
-
-                        {% else %}
-
-                        <div class="task-status status-completed">
-
-                            <i class="fas fa-check-circle"></i>
-
-                            Completed
-
-                        </div>
-
-                        {% endif %}
 
                     </div>
 
                     {% endfor %}
 
                 </div>
+
+                {% endif %}
 
             </section>
 
