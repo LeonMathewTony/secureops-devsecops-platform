@@ -59,7 +59,6 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 # =========================================
 
 db.init_app(app)
-
 bcrypt.init_app(app)
 
 # =========================================
@@ -67,11 +66,8 @@ bcrypt.init_app(app)
 # =========================================
 
 login_manager = LoginManager()
-
 login_manager.init_app(app)
-
 login_manager.login_view = "login"
-
 login_manager.login_message_category = "info"
 
 # =========================================
@@ -220,11 +216,31 @@ def forgot_password():
 @login_required
 def dashboard():
 
-    total_tasks = Task.query.filter_by(user_id=current_user.id).count()
-    completed_tasks = Task.query.filter_by(user_id=current_user.id, status="Completed").count()
-    pending_tasks = Task.query.filter_by(user_id=current_user.id, status="Pending").count()
-    progress_tasks = Task.query.filter_by(user_id=current_user.id, status="In Progress").count()
-    recent_tasks = Task.query.filter_by(user_id=current_user.id).order_by(Task.created_at.desc()).limit(5).all()
+    if current_user.role == "Admin":
+        total_tasks     = Task.query.count()
+        completed_tasks = Task.query.filter_by(status="Completed").count()
+        pending_tasks   = Task.query.filter_by(status="Pending").count()
+        progress_tasks  = Task.query.filter_by(status="In Progress").count()
+        recent_tasks    = Task.query.order_by(Task.created_at.desc()).limit(5).all()
+    else:
+        total_tasks     = Task.query.filter(
+            (Task.user_id == current_user.id) | (Task.is_global == True)
+        ).count()
+        completed_tasks = Task.query.filter(
+            ((Task.user_id == current_user.id) | (Task.is_global == True)),
+            Task.status == "Completed"
+        ).count()
+        pending_tasks   = Task.query.filter(
+            ((Task.user_id == current_user.id) | (Task.is_global == True)),
+            Task.status == "Pending"
+        ).count()
+        progress_tasks  = Task.query.filter(
+            ((Task.user_id == current_user.id) | (Task.is_global == True)),
+            Task.status == "In Progress"
+        ).count()
+        recent_tasks    = Task.query.filter(
+            (Task.user_id == current_user.id) | (Task.is_global == True)
+        ).order_by(Task.created_at.desc()).limit(5).all()
 
     return render_template(
         "dashboard.html",
@@ -271,9 +287,12 @@ def projects():
         flash("Project created successfully.", "success")
         return redirect(url_for("projects"))
 
-    all_projects = Project.query.filter_by(
-        user_id=current_user.id
-    ).order_by(Project.created_at.desc()).all()
+    if current_user.role == "Admin":
+        all_projects = Project.query.order_by(Project.created_at.desc()).all()
+    else:
+        all_projects = Project.query.filter_by(
+            user_id=current_user.id
+        ).order_by(Project.created_at.desc()).all()
 
     return render_template("projects.html", user=current_user, projects=all_projects)
 
@@ -287,7 +306,7 @@ def delete_project(id):
 
     project = Project.query.get_or_404(id)
 
-    if project.user_id != current_user.id:
+    if project.user_id != current_user.id and current_user.role != "Admin":
         flash("Unauthorized action.", "danger")
         return redirect(url_for("projects"))
 
@@ -316,12 +335,16 @@ def tasks():
             flash("Please fill all required fields.", "danger")
             return redirect(url_for("tasks"))
 
+        # Admin tasks are global — visible to all employees
+        is_global = current_user.role == "Admin"
+
         new_task = Task(
             title=title,
             description=description,
             status=status,
             priority=priority,
-            user_id=current_user.id
+            user_id=current_user.id,
+            is_global=is_global
         )
 
         db.session.add(new_task)
@@ -330,9 +353,13 @@ def tasks():
         flash("Task created successfully.", "success")
         return redirect(url_for("tasks"))
 
-    all_tasks = Task.query.filter_by(
-        user_id=current_user.id
-    ).order_by(Task.created_at.desc()).all()
+    # Admin sees all tasks, others see own + global tasks
+    if current_user.role == "Admin":
+        all_tasks = Task.query.order_by(Task.created_at.desc()).all()
+    else:
+        all_tasks = Task.query.filter(
+            (Task.user_id == current_user.id) | (Task.is_global == True)
+        ).order_by(Task.created_at.desc()).all()
 
     return render_template("tasks.html", tasks=all_tasks, user=current_user)
 
@@ -346,7 +373,7 @@ def edit_task(id):
 
     task = Task.query.get_or_404(id)
 
-    if task.user_id != current_user.id:
+    if task.user_id != current_user.id and current_user.role != "Admin":
         flash("Unauthorized action.", "danger")
         return redirect(url_for("tasks"))
 
@@ -374,7 +401,7 @@ def delete_task(id):
 
     task = Task.query.get_or_404(id)
 
-    if task.user_id != current_user.id:
+    if task.user_id != current_user.id and current_user.role != "Admin":
         flash("Unauthorized action.", "danger")
         return redirect(url_for("tasks"))
 
@@ -393,10 +420,27 @@ def delete_task(id):
 @roles_required("Admin", "Security Analyst", "DevOps Engineer", "Cloud Engineer")
 def analytics():
 
-    total_tasks     = Task.query.filter_by(user_id=current_user.id).count()
-    completed_tasks = Task.query.filter_by(user_id=current_user.id, status="Completed").count()
-    pending_tasks   = Task.query.filter_by(user_id=current_user.id, status="Pending").count()
-    progress_tasks  = Task.query.filter_by(user_id=current_user.id, status="In Progress").count()
+    if current_user.role == "Admin":
+        total_tasks     = Task.query.count()
+        completed_tasks = Task.query.filter_by(status="Completed").count()
+        pending_tasks   = Task.query.filter_by(status="Pending").count()
+        progress_tasks  = Task.query.filter_by(status="In Progress").count()
+    else:
+        total_tasks     = Task.query.filter(
+            (Task.user_id == current_user.id) | (Task.is_global == True)
+        ).count()
+        completed_tasks = Task.query.filter(
+            ((Task.user_id == current_user.id) | (Task.is_global == True)),
+            Task.status == "Completed"
+        ).count()
+        pending_tasks   = Task.query.filter(
+            ((Task.user_id == current_user.id) | (Task.is_global == True)),
+            Task.status == "Pending"
+        ).count()
+        progress_tasks  = Task.query.filter(
+            ((Task.user_id == current_user.id) | (Task.is_global == True)),
+            Task.status == "In Progress"
+        ).count()
 
     return render_template(
         "analytics.html",
